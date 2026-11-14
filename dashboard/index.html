@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Token Radar — pre-token protocols ranked by implied value</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="kicker">TOKEN RADAR &middot; MODEL RADAR-2 &middot; SNAPSHOT <span id="asOf">—</span></p>
+    <h1>Which pre-token protocol is worth farming next?</h1>
+    <p class="lede">Two hundred protocols that record no token yet, ranked by what a launch
+    would be worth if their record stayed as it is. Every value is derived from the
+    snapshot's own figures — TVL, seven-day growth, age with no token, chains and
+    category — never from a hand-picked list of names.</p>
+    <dl class="stats">
+      <div><dt>Protocols ranked</dt><dd id="statRows">—</dd></div>
+      <div><dt>Watchlist covered</dt><dd id="statWatch">—</dd></div>
+      <div><dt>Early finds below the floor</dt><dd id="statEarly">—</dd></div>
+      <div><dt>Top implied value</dt><dd id="statTop">—</dd></div>
+      <div><dt>Live tokens set aside</dt><dd id="statLive">—</dd></div>
+    </dl>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="panel" id="controls" aria-label="Filter and sort the board">
+    <div class="ctl">
+      <label for="q">Search</label>
+      <input id="q" type="search" placeholder="Name or slug…" autocomplete="off">
+    </div>
+    <div class="ctl">
+      <label for="cat">Category</label>
+      <select id="cat"><option value="">All categories</option></select>
+    </div>
+    <div class="ctl">
+      <label for="chain">Chain</label>
+      <select id="chain"><option value="">All chains</option></select>
+    </div>
+    <div class="ctl">
+      <label for="minTvl">Min TVL</label>
+      <select id="minTvl">
+        <option value="0">Any TVL</option>
+        <option value="50000000">$50M and up</option>
+        <option value="100000000">$100M and up</option>
+        <option value="500000000">$500M and up</option>
+      </select>
+    </div>
+    <div class="ctl">
+      <label for="sort">Sort by</label>
+      <select id="sort">
+        <option value="rank">Rank (implied value)</option>
+        <option value="value">Implied value</option>
+        <option value="tvl">TVL</option>
+        <option value="growth">7-day growth</option>
+        <option value="age">Age (days listed)</option>
+      </select>
+    </div>
+    <p class="count" id="count" aria-live="polite"></p>
+  </section>
+
+  <section class="panel detail" id="detail" hidden aria-label="Protocol detail"></section>
+
+  <section class="panel" aria-label="Ranked board">
+    <h2>Ranked board <span class="note">pre-token only — click any row for its farm plan</span></h2>
+    <div class="tablewrap">
+      <table id="board">
+        <thead><tr>
+          <th data-k="rank">Rank</th><th data-k="name">Protocol</th><th data-k="category">Category</th>
+          <th data-k="chains">Chains</th><th data-k="tvl" class="num">TVL</th>
+          <th data-k="growth" class="num">7-day</th><th data-k="age" class="num">Age</th>
+          <th data-k="value" class="num">Implied value</th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <p class="foot">Implied value is this radar's own claim from the snapshot, not a prediction
+    that a token will launch, or when. “Records no token” means the snapshot carries
+    no market cap, CoinGecko id or symbol for it — not proof that none exists.</p>
+  </section>
+
+  <section class="panel" aria-label="How the model works">
+    <h2>How the value is worked out</h2>
+    <p>Every row is scored by the same formula, <code>impliedValue</code> in
+    <code>lib/model.ts</code>. Nothing is special-cased by name.</p>
+    <ol class="model">
+      <li><b>Base.</b> TVL &times; <span id="mBase">0.32</span> — the size of the protocol, in dollars.</li>
+      <li><b>Growth.</b> The 7-day TVL change, clamped to <span id="mGrowth">−50% … +150%</span>,
+        weighted <span id="mWeight">0.6</span>: fast growers score higher, shrinking ones lower.</li>
+      <li><b>Maturity.</b> Older listings with no token recorded earn more weight, rising from
+        <span id="mMat">0.55</span> toward 1.00 over four years; an unknown listing date counts as 270 days.</li>
+      <li><b>Breadth.</b> +3% per extra chain, up to five — a protocol live on many chains is harder to ignore.</li>
+      <li><b>Category.</b> A durability factor per category (1.00 for Dexs and Lending, down to
+        0.85 for bridges and wrapped products that mirror a token already trading).</li>
+    </ol>
+    <p class="foot">Farm plans are built from the same record: capital is sized to TVL
+    ($75–$500 a position), the hold period to age (45–90 days), and the core action
+    to the protocol's category and main chain. Every step states what it costs and how long it takes.</p>
+  </section>
+
+  <section class="panel live" aria-label="Live tokens">
+    <h2>Already trading — set aside, not ranked</h2>
+    <p>These protocols already record a token, so the board does not rank them. Their
+    market values below are the market's own, from the snapshot — never a model guess.</p>
+    <div class="tablewrap">
+      <table id="liveTable">
+        <thead><tr><th>Protocol</th><th>Category</th><th>Chains</th>
+        <th class="num">TVL</th><th class="num">Market cap</th><th class="num">7-day</th></tr></thead>
+        <tbody id="liveRows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer class="foot">Source: DefiLlama protocol snapshot, <span id="srcNote">—</span>.
+  Built offline from a frozen snapshot; this page makes no network request.</footer>
+</main>
+<script src="../data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
